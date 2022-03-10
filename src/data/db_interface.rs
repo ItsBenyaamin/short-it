@@ -3,7 +3,7 @@ use crate::data::Short;
 pub trait DatabaseInterface {
     fn list_of_all(&mut self) -> Option<Vec<Short>>;
 
-    fn add(&mut self, url: String, hash: String, until: u64, token: String) -> String;
+    fn add(&mut self, short: Short) -> bool;
 
     fn edit(&mut self, id: u64) -> String;
 

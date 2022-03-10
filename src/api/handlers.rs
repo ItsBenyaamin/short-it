@@ -29,3 +29,14 @@ pub async fn get_all(short_client: ShortItClient) -> Result<Response<Body>, warp
     response.headers_mut().append("Content-Type", json_header_value);
     Ok(response)
 }
+
+pub async fn add_short(body: AddRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
+    let mut client = short_client.lock().await;
+    if body.token != client.config.token {
+        return Ok(warp::reply::with_status(String::from("error"), StatusCode::UNAUTHORIZED).into_response())
+    }
+
+    let result = client.short_with(body.url, body.until);
+
+    Ok(warp::reply::Response::new(result.into()))
+}

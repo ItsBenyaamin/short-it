@@ -51,8 +51,23 @@ pub mod mysql_impl {
             }
         }
 
-        fn add(&mut self, url: String, hash: String, until: u64, token: String) -> String {
-            todo!()
+        fn add(&mut self, short: Short) -> bool {
+            let mut connection = self.connection.get_conn();
+            if connection.is_err() {
+                return false;
+            }
+
+            return match connection.unwrap().exec_drop(
+                "insert into shorts (hash, url, until) values (:hash, :url, :until)",
+                params! {
+                    "hash" => short.hash,
+                    "url" => short.url,
+                    "until" => short.until
+                }
+            ) {
+                Ok(_) => { true }
+                Err(_) => { false }
+            }
         }
 
         fn edit(&mut self, id: u64) -> String {

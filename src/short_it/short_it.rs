@@ -2,6 +2,7 @@ pub mod short_it {
     use std::sync::Arc;
     use tokio::sync::Mutex;
     use nanoid::nanoid;
+    use warp::http::StatusCode;
     use crate::api::*;
     use crate::{AppConfig, MysqlDB};
     use crate::data::{DatabaseInterface, Short};
@@ -47,9 +48,21 @@ pub mod short_it {
             };
         }
 
-        pub fn short_with(&mut self, url: String, until: u64) -> String {
-            let uuid = nanoid!(6);
-            self.db_client.add(url, uuid, until, "".to_string())
+        pub fn short_with(&mut self, url: String, until: f64) -> String {
+            let hash = nanoid!(6);
+            let short = Short {
+                hash,
+                url,
+                until,
+                view: 0
+            };
+            return if self.db_client.add(short) {
+                let response = Response::with_data("inserted".to_string(), 201);
+                serde_json::to_string(&response).unwrap()
+            }else {
+                let response = Response::with_error(String::from("error due to inserting!"), 500, "false".to_string());
+                serde_json::to_string(&response).unwrap()
+            }
         }
 
     }
