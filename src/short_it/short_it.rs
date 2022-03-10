@@ -16,10 +16,10 @@ pub mod short_it {
 
     impl ShortIt{
 
-        pub fn from(_client: MysqlDB, _config: AppConfig) -> Self {
+        pub fn from(db_client: MysqlDB, config: AppConfig) -> Self {
             ShortIt {
-                db_client : _client,
-                config : _config
+                db_client,
+                config
             }
         }
 
