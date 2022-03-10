@@ -23,5 +23,6 @@ pub async fn login_base(body: LoginRequest, short_client: ShortItClient) -> Resu
 
 
 pub async fn something(short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
-    unimplemented!()
+    println!("OK!");
+    Ok(warp::reply::Response::new("HAHA".into()))
 }

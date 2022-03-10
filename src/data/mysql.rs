@@ -1,4 +1,5 @@
 pub mod mysql_impl {
+    use crate::data::DatabaseInterface;
 
     #[derive(Debug, Clone)]
     pub struct MysqlDB {
@@ -6,27 +7,28 @@ pub mod mysql_impl {
     }
 
     impl MysqlDB {
-
         pub fn new() -> Self {
             MysqlDB {}
         }
+    }
 
-        pub fn list_of_all(&self) -> String {
+    impl DatabaseInterface for MysqlDB {
+
+        fn list_of_all(&self) {
             todo!()
         }
 
-        pub fn add(&self, url: String, hash: String, until: u64) -> String {
+        fn add(&self, url: String, hash: String, until: u64) -> String {
             todo!()
         }
 
-        pub fn edit(&self, id: u64) -> String {
+        fn edit(&self, id: u64) -> String {
             todo!()
         }
 
-        pub fn delete(&self, id: u64) {
+        fn delete(&self, id: u64) {
             todo!()
         }
-
     }
 
 }
