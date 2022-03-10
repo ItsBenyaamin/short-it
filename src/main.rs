@@ -14,7 +14,7 @@ use crate::short_it::ShortIt;
 #[tokio::main]
 async fn main() {
     let mut config = AppConfig::create();
-    let db_client = MysqlDB::new();
+    let db_client = MysqlDB::new(&config.db_username, &config.db_password, &config.db_name);
     let short_it = ShortIt::from(db_client, config);
     setup_endpoints(short_it.to_client()).await;
 }

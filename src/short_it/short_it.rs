@@ -1,10 +1,10 @@
 pub mod short_it {
     use std::sync::Arc;
     use tokio::sync::Mutex;
-    use bcrypt::{verify};
     use nanoid::nanoid;
     use crate::api::*;
     use crate::{AppConfig, MysqlDB};
+    use crate::data::{DatabaseInterface, Short};
 
     pub type ShortItClient = Arc<Mutex<ShortIt>>;
 
@@ -35,9 +35,21 @@ pub mod short_it {
             return serde_json::to_string(&response).unwrap();
         }
 
+        pub fn list_of_shorts(&mut self) -> String {
+            return match self.db_client.list_of_all() {
+                Some(result) => {
+                    serde_json::to_string(&result).unwrap()
+                }
+                None => {
+                    let response = Response::with_error("server failed to provide data!".to_string(), 500, "".to_string());
+                    serde_json::to_string(&response).unwrap()
+                }
+            };
+        }
+
         pub fn short_with(&mut self, url: String, until: u64) -> String {
             let uuid = nanoid!(6);
-            self.db_client.add(url, uuid, until)
+            self.db_client.add(url, uuid, until, "".to_string())
         }
 
     }

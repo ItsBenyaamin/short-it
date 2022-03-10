@@ -19,7 +19,7 @@ impl <T: ResponseData> Response<T> {
         }
     }
 
-    pub fn with_error(error: String, status_code: u16, _data: T) -> Self {
+    pub fn with_error(error: String, status_code: u16, data: T) -> Self {
         Response {
             error,
             status_code,

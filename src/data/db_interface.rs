@@ -1,9 +1,11 @@
+use crate::data::Short;
+
 pub trait DatabaseInterface {
-    fn list_of_all(&self);
+    fn list_of_all(&mut self) -> Option<Vec<Short>>;
 
-    fn add(&self, url: String, hash: String, until: u64) -> String;
+    fn add(&mut self, url: String, hash: String, until: u64, token: String) -> String;
 
-    fn edit(&self, id: u64) -> String;
+    fn edit(&mut self, id: u64) -> String;
 
-    fn delete(&self, id: u64);
+    fn delete(&mut self, id: u64);
 }

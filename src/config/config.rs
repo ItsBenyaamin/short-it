@@ -11,6 +11,7 @@ pub mod app_config {
     pub struct AppConfig {
         pub config_path: String,
         pub ip: String,
+        pub db_name: String,
         pub db_username: String,
         pub db_password: String,
         pub username: String,
@@ -54,10 +55,11 @@ pub mod app_config {
             write_config(&file, &self)
         }
 
-        fn default_config() -> Self {
+        pub fn default_config() -> Self {
             AppConfig {
                 config_path: String::from(""),
                 ip : String::from(""),
+                db_name: String::from(""),
                 db_username: String::from(""),
                 db_password: String::from(""),
                 username: String::from("admin"),

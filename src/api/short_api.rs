@@ -1,22 +1,30 @@
 pub mod short_api {
     use warp::Filter;
-    use crate::api::{login_base, something};
+    use crate::api::{get_all, login_base};
     use crate::ShortItClient;
 
     pub async fn setup_endpoints(client: ShortItClient) {
         let accept = warp::header::exact("Accept", "application/json");
         let content_type = warp::header::exact("Content-Type", "application/json");
+
         let login = warp::path!("login")
             .and(warp::post())
             .and(accept)
             .and(content_type)
             .and(warp::body::json())
-            .and(with_client(client))
+            .and(with_client(client.clone()))
             .and_then(login_base);
 
+        let list_all = warp::path!("all")
+            .and(warp::get())
+            .and(content_type)
+            .and(with_client(client.clone()))
+            .and_then(get_all);
 
+        let routes = login
+            .or(list_all);
 
-        warp::serve(login)
+        warp::serve(routes)
             .run(([127, 0, 0, 1], 4500))
             .await;
     }
