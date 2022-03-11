@@ -33,10 +33,29 @@ pub async fn get_all(short_client: ShortItClient) -> Result<Response<Body>, warp
 pub async fn add_short(body: AddRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
     let mut client = short_client.lock().await;
     if body.token != client.config.token {
-        return Ok(warp::reply::with_status(String::from("error"), StatusCode::UNAUTHORIZED).into_response())
+        return Ok(warp::reply::with_status(String::from("error"),
+                                           StatusCode::UNAUTHORIZED).into_response())
     }
-
     let result = client.short_with(body.url, body.until);
+    Ok(warp::reply::Response::new(result.into()))
+}
 
+pub async fn edit_short(body: EditRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
+    let mut client = short_client.lock().await;
+    if body.token != client.config.token {
+        return Ok(warp::reply::with_status(String::from("error"),
+                                           StatusCode::UNAUTHORIZED).into_response())
+    }
+    let result = client.edit_short(body.hash, body.url, body.until);
+    Ok(warp::reply::Response::new(result.into()))
+}
+
+pub async fn delete_short(body: RemoveRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
+    let mut client = short_client.lock().await;
+    if body.token != client.config.token {
+        return Ok(warp::reply::with_status(String::from("error"),
+                                           StatusCode::UNAUTHORIZED).into_response())
+    }
+    let result = client.delete_short(body.hash);
     Ok(warp::reply::Response::new(result.into()))
 }

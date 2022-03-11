@@ -2,6 +2,8 @@ pub mod mysql_impl {
     use crate::data::{DatabaseInterface, Short};
     use mysql::*;
     use mysql::prelude::*;
+    use std::fmt::Result;
+    use crate::api::{ApiOperationStatus, EditRequest};
 
     #[derive(Debug, Clone)]
     pub struct MysqlDB {
@@ -51,31 +53,80 @@ pub mod mysql_impl {
             }
         }
 
-        fn add(&mut self, short: Short) -> bool {
+        fn is_hash_exist(&self, hash: &String) -> bool {
             let mut connection = self.connection.get_conn();
             if connection.is_err() {
                 return false;
             }
 
+            let result: Option<bool> = connection.unwrap()
+                .query_first(format!("select exists(select hash from shorts where hash='{}')", hash))
+                .unwrap();
+
+            result.unwrap()
+        }
+
+        fn add(&mut self, short: Short) -> ApiOperationStatus {
+            let mut connection = self.connection.get_conn();
+            if connection.is_err() {
+                return ApiOperationStatus::ConnectionError;
+            }
+
+            if self.is_hash_exist(&short.hash) {
+                return ApiOperationStatus::DuplicatedHashError;
+            }
+
             return match connection.unwrap().exec_drop(
                 "insert into shorts (hash, url, until) values (:hash, :url, :until)",
                 params! {
-                    "hash" => short.hash,
+                    "hash" => &short.hash,
                     "url" => short.url,
                     "until" => short.until
                 }
             ) {
-                Ok(_) => { true }
-                Err(_) => { false }
+                Ok(_) => { ApiOperationStatus::Inserted }
+                Err(_) => { ApiOperationStatus::InsertError }
             }
         }
 
-        fn edit(&mut self, id: u64) -> String {
-            todo!()
+        fn edit(&mut self, hash: String, url: String, until: f64) -> ApiOperationStatus {
+            let mut connection = self.connection.get_conn();
+            if connection.is_err() {
+                return ApiOperationStatus::ConnectionError;
+            }
+
+            if self.is_hash_exist(&hash) {
+                match connection.unwrap()
+                    .exec_drop("update shorts set url=:url, until=:until where hash=:hash",
+                    params! {
+                        "url" => url.trim(),
+                        "until" => until,
+                        "hash" => hash
+                    }) {
+                    Ok(_) => { return ApiOperationStatus::Edited }
+                    Err(e) => {}
+                }
+            }
+
+            ApiOperationStatus::EditError
         }
 
-        fn delete(&mut self, id: u64) {
-            todo!()
+        fn delete(&mut self, hash: String) -> ApiOperationStatus {
+            let mut connection = self.connection.get_conn();
+            if connection.is_err() {
+                return ApiOperationStatus::ConnectionError;
+            }
+
+            if self.is_hash_exist(&hash) {
+                match connection.unwrap().exec_drop("delete from shorts where hash =:hash",
+                params! {
+                    "hash" => hash
+                }) {
+                    Ok(_) => { return ApiOperationStatus::Deleted; }
+                    Err(_) => {}
+                }
+            }
+            return ApiOperationStatus::DeleteError
         }
     }
 

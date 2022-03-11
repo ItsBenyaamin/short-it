@@ -1,11 +1,15 @@
+use std::fmt::Error;
+use crate::api::ApiOperationStatus;
 use crate::data::Short;
 
 pub trait DatabaseInterface {
     fn list_of_all(&mut self) -> Option<Vec<Short>>;
 
-    fn add(&mut self, short: Short) -> bool;
+    fn is_hash_exist(&self, hash: &String) -> bool;
 
-    fn edit(&mut self, id: u64) -> String;
+    fn add(&mut self, short: Short) -> ApiOperationStatus;
 
-    fn delete(&mut self, id: u64);
+    fn edit(&mut self, hash: String, url: String, until: f64) -> ApiOperationStatus;
+
+    fn delete(&mut self, hash: String) -> ApiOperationStatus;
 }

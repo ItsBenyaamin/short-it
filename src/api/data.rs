@@ -12,3 +12,18 @@ pub struct AddRequest {
     pub until: f64,
     pub token: String
 }
+
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct EditRequest {
+    pub hash: String,
+    pub url: String,
+    pub until: f64,
+    pub token: String
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct RemoveRequest {
+    pub hash: String,
+    pub token: String
+}

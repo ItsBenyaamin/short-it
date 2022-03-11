@@ -52,17 +52,67 @@ pub mod short_it {
             let hash = nanoid!(6);
             let short = Short {
                 hash,
-                url,
+                url: url.clone(),
                 until,
                 view: 0
             };
-            return if self.db_client.add(short) {
-                let response = Response::with_data("inserted".to_string(), 201);
-                serde_json::to_string(&response).unwrap()
-            }else {
-                let response = Response::with_error(String::from("error due to inserting!"), 500, "false".to_string());
-                serde_json::to_string(&response).unwrap()
-            }
+            let result = self.db_client.add(short);
+
+            let response = match result {
+                ApiOperationStatus::Inserted => {
+                    Response::with_data(String::from("inserted.")
+                                        , 201)
+                }
+
+                ApiOperationStatus::DuplicatedHashError => {
+                    return self.short_with(url, until);
+                }
+
+                ApiOperationStatus::InsertError |
+                    ApiOperationStatus::ConnectionError | _ => {
+                    Response::with_error(String::from("please try again later :(."),
+                                         500,
+                                         "".to_string())
+                }
+
+            };
+            serde_json::to_string(&response).unwrap()
+        }
+
+        pub fn edit_short(&mut self, hash: String, url: String, until: f64) -> String {
+            let result = self.db_client.edit(hash, url, until);
+            let response = match result {
+                ApiOperationStatus::Edited => {
+                    Response::with_data(String::from("edited.")
+                                        , 200)
+                }
+
+                ApiOperationStatus::EditError |
+                    ApiOperationStatus::ConnectionError | _ => {
+                    Response::with_error(String::from("please try again later :(."),
+                                         500,
+                                         "".to_string())
+                }
+            };
+            serde_json::to_string(&response).unwrap()
+        }
+
+        pub fn delete_short(&mut self, hash: String) -> String {
+            let result = self.db_client.delete(hash);
+            let response = match result {
+                ApiOperationStatus::Deleted => {
+                    Response::with_data(String::from("deleted.")
+                                        , 200)
+                }
+
+                ApiOperationStatus::DeleteError |
+                    ApiOperationStatus::ConnectionError | _ => {
+                    Response::with_error(String::from("please try again later :(."),
+                                         500,
+                                         "".to_string())
+                }
+            };
+            serde_json::to_string(&response).unwrap()
         }
 
     }
