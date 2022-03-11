@@ -1,5 +1,5 @@
 pub mod app_config {
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
     use std::fs::OpenOptions;
     use std::io::{Read, Write};
     use serde::{Serialize, Deserialize};
@@ -28,13 +28,13 @@ pub mod app_config {
             let config_file = match config_folder {
                 Some(mut config) => {
                     if !config.exists() {
-                        std::fs::create_dir(&config);
+                        let _ = std::fs::create_dir(&config);
                     }
                     config.push("short_it.env");
                     config
                 }
                 None => {
-                    println!("problem due to open userspace config folder");
+                    println!("problem due to open userspace app_config folder");
                     panic!();
                 }
             };
@@ -49,10 +49,10 @@ pub mod app_config {
             get_config_from_file(&config_file)
         }
 
-        pub fn renew_token(&mut self, new_token: &String) {
-            self.token = new_token.clone();
+        pub fn renew_token(&mut self, new_token: &str) {
+            self.token = new_token.to_string();
             let file = PathBuf::from(&self.config_path);
-            write_config(&file, &self)
+            write_config(&file, self)
         }
 
         pub fn default_config() -> Self {
@@ -71,20 +71,17 @@ pub mod app_config {
 
     }
 
-    fn write_config(path_buf: &PathBuf, config: &AppConfig) {
+    fn write_config(path_buf: &Path, config: &AppConfig) {
         let options = OpenOptions::new().create(true).write(true).open(&path_buf);
-        match options {
-            Ok(mut file) => {
-                let config_string = serde_json::to_string(&config).unwrap();
-                if file.write_all(&config_string.as_bytes()).is_err() {
-                    println!("problem due to write config file!");
-                }
+        if let Ok(mut file) = options {
+            let config_string = serde_json::to_string(&config).unwrap();
+            if file.write_all(config_string.as_bytes()).is_err() {
+                println!("problem due to write app_config file!");
             }
-            Err(e) => {}
         }
     }
 
-    fn get_config_from_file(path_buf: &PathBuf) -> AppConfig {
+    fn get_config_from_file(path_buf: &Path) -> AppConfig {
         let mut file = OpenOptions::new().read(true).open(&path_buf).unwrap();
         let mut buf = String::new();
         file.read_to_string(&mut buf).unwrap();

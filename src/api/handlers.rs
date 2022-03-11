@@ -1,22 +1,18 @@
 use bcrypt::verify;
 use warp::hyper::{Body, StatusCode};
 use warp::http::Response;
-use warp::{head, Reply};
+use warp::Reply;
 use crate::api::*;
-use crate::data::Short;
 use crate::ShortItClient;
 
 pub async fn login_base(body: LoginRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
     let mut client = short_client.lock().await;
     if body.username == client.config.username {
-        match verify(body.password, client.config.password.as_str()) {
-            Ok(verify_result) => {
-                if verify_result {
-                    let result = client.login();
-                    return Ok(warp::reply::Response::new(result.into()))
-                }
+        if let Ok(verify_result) = verify(body.password, client.config.password.as_str()) {
+            if verify_result {
+                let result = client.login();
+                return Ok(warp::reply::Response::new(result.into()))
             }
-            Err(_) => {}
         }
     }
     Ok(warp::reply::with_status("wrong credential!", StatusCode::UNAUTHORIZED).into_response())

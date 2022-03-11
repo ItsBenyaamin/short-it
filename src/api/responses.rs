@@ -49,13 +49,5 @@ impl LoginData {
     }
 }
 
-impl EmptyData {
-    pub fn from(data: String) -> Self {
-        Self {
-            data
-        }
-    }
-}
-
 impl ResponseData for LoginData  {}
 impl ResponseData for String  {}

@@ -2,8 +2,7 @@ pub mod mysql_impl {
     use crate::data::{DatabaseInterface, Short};
     use mysql::*;
     use mysql::prelude::*;
-    use std::fmt::Result;
-    use crate::api::{ApiOperationStatus, EditRequest};
+    use crate::api::ApiOperationStatus;
 
     #[derive(Debug, Clone)]
     pub struct MysqlDB {
@@ -11,10 +10,10 @@ pub mod mysql_impl {
     }
 
     impl MysqlDB {
-        pub fn new(username: &String, password: &String, database: &String) -> Self {
+        pub fn new(username: &str, password: &str, database: &str) -> Self {
             let url = format!("mysql://{}:{}@192.168.1.100:3306/{}", username, password, database);
             let opts = mysql::Opts::from_url(url.as_str()).unwrap();
-            let mut pool = match Pool::new(opts) {
+            let pool = match Pool::new(opts) {
                 Ok(p) => {
                     p
                 }
@@ -32,7 +31,7 @@ pub mod mysql_impl {
     impl DatabaseInterface for MysqlDB {
 
         fn list_of_all(&mut self) -> Option<Vec<Short>> {
-            let mut connection = self.connection.get_conn();
+            let connection = self.connection.get_conn();
             if connection.is_err() {
                 return None;
             }
@@ -53,8 +52,8 @@ pub mod mysql_impl {
             }
         }
 
-        fn is_hash_exist(&self, hash: &String) -> bool {
-            let mut connection = self.connection.get_conn();
+        fn is_hash_exist(&self, hash: &str) -> bool {
+            let connection = self.connection.get_conn();
             if connection.is_err() {
                 return false;
             }
@@ -67,7 +66,7 @@ pub mod mysql_impl {
         }
 
         fn add(&mut self, short: Short) -> ApiOperationStatus {
-            let mut connection = self.connection.get_conn();
+            let connection = self.connection.get_conn();
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;
             }
@@ -90,43 +89,37 @@ pub mod mysql_impl {
         }
 
         fn edit(&mut self, hash: String, url: String, until: f64) -> ApiOperationStatus {
-            let mut connection = self.connection.get_conn();
+            let connection = self.connection.get_conn();
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;
             }
 
-            if self.is_hash_exist(&hash) {
-                match connection.unwrap()
-                    .exec_drop("update shorts set url=:url, until=:until where hash=:hash",
-                    params! {
-                        "url" => url.trim(),
-                        "until" => until,
-                        "hash" => hash
-                    }) {
-                    Ok(_) => { return ApiOperationStatus::Edited }
-                    Err(e) => {}
-                }
+            if self.is_hash_exist(&hash) && connection.unwrap()
+                .exec_drop("update shorts set url=:url, until=:until where hash=:hash",
+                           params! {
+                                "url" => url.trim(),
+                                "until" => until,
+                                "hash" => hash
+                           }).is_ok() {
+                return ApiOperationStatus::Edited
             }
 
             ApiOperationStatus::EditError
         }
 
         fn delete(&mut self, hash: String) -> ApiOperationStatus {
-            let mut connection = self.connection.get_conn();
+            let connection = self.connection.get_conn();
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;
             }
 
-            if self.is_hash_exist(&hash) {
-                match connection.unwrap().exec_drop("delete from shorts where hash =:hash",
-                params! {
-                    "hash" => hash
-                }) {
-                    Ok(_) => { return ApiOperationStatus::Deleted; }
-                    Err(_) => {}
-                }
+            if self.is_hash_exist(&hash) && connection.unwrap()
+                .exec_drop("delete from shorts where hash =:hash",
+                           params! {"hash" => hash}).is_ok() {
+                return ApiOperationStatus::Deleted;
             }
-            return ApiOperationStatus::DeleteError
+
+            ApiOperationStatus::DeleteError
         }
     }
 

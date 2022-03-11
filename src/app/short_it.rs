@@ -1,8 +1,7 @@
-pub mod short_it {
+pub mod short_app {
     use std::sync::Arc;
     use tokio::sync::Mutex;
     use nanoid::nanoid;
-    use warp::http::StatusCode;
     use crate::api::*;
     use crate::{AppConfig, MysqlDB};
     use crate::data::{DatabaseInterface, Short};
@@ -31,13 +30,13 @@ pub mod short_it {
         pub fn login(&mut self) -> String {
             let token = nanoid!(32);
             self.config.renew_token(&token);
-            let mut login_response = LoginData::from(self.config.username.clone(), token.clone());
+            let login_response = LoginData::from(self.config.username.clone(), token.clone());
             let response = Response::with_data(login_response, 200);
-            return serde_json::to_string(&response).unwrap();
+            serde_json::to_string(&response).unwrap()
         }
 
         pub fn list_of_shorts(&mut self) -> String {
-            return match self.db_client.list_of_all() {
+            match self.db_client.list_of_all() {
                 Some(result) => {
                     serde_json::to_string(&result).unwrap()
                 }
@@ -45,7 +44,7 @@ pub mod short_it {
                     let response = Response::with_error("server failed to provide data!".to_string(), 500, "".to_string());
                     serde_json::to_string(&response).unwrap()
                 }
-            };
+            }
         }
 
         pub fn short_with(&mut self, url: String, until: f64) -> String {

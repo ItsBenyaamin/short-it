@@ -1,4 +1,4 @@
-pub mod short_api {
+pub mod api {
     use warp::Filter;
     use crate::api::{add_short, delete_short, edit_short, get_all, login_base};
     use crate::ShortItClient;

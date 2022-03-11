@@ -1,19 +1,19 @@
 extern crate core;
 
 mod data;
-mod short_it;
-mod config;
+mod app;
+mod app_config;
 mod api;
 
-use config::AppConfig;
+use app_config::AppConfig;
 use data::MysqlDB;
-use crate::api::short_api::short_api::setup_endpoints;
-use crate::short_it::short_it::short_it::ShortItClient;
-use crate::short_it::ShortIt;
+use crate::api::short_api::api::setup_endpoints;
+use crate::app::short_it::short_app::ShortItClient;
+use crate::app::ShortIt;
 
 #[tokio::main]
 async fn main() {
-    let mut config = AppConfig::create();
+    let config = AppConfig::create();
     let db_client = MysqlDB::new(&config.db_username, &config.db_password, &config.db_name);
     let short_it = ShortIt::from(db_client, config);
     setup_endpoints(short_it.to_client()).await;
