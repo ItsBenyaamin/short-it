@@ -1,27 +1,33 @@
 pub mod api {
     use warp::Filter;
-    use crate::api::{add_short, delete_short, edit_short, get_all, login_base};
+    use crate::api::{base, login, add_short, delete_short, edit_short, get_all};
     use crate::ShortItClient;
 
     pub async fn setup_endpoints(client: ShortItClient) {
         let accept = warp::header::exact("Accept", "application/json");
         let content_type = warp::header::exact("Content-Type", "application/json");
 
-        let login = warp::path!("login")
+        let base_path = warp::path!("r" / String)
+            .and(with_client(client.clone()))
+            .and(warp::addr::remote())
+            .and(warp::header::headers_cloned())
+            .and_then(base);
+
+        let login_path = warp::path!("api" / "login")
             .and(warp::post())
             .and(accept)
             .and(content_type)
             .and(warp::body::json())
             .and(with_client(client.clone()))
-            .and_then(login_base);
+            .and_then(login);
 
-        let list_all = warp::path!("all")
+        let list_all_path = warp::path!("api" / "all")
             .and(warp::get())
             .and(content_type)
             .and(with_client(client.clone()))
             .and_then(get_all);
 
-        let add = warp::path!("add")
+        let add_path = warp::path!("api" / "add")
             .and(warp::post())
             .and(accept)
             .and(content_type)
@@ -29,7 +35,7 @@ pub mod api {
             .and(with_client(client.clone()))
             .and_then(add_short);
 
-        let edit = warp::path!("edit")
+        let edit_path = warp::path!("api" / "edit")
             .and(warp::patch())
             .and(accept)
             .and(content_type)
@@ -37,7 +43,7 @@ pub mod api {
             .and(with_client(client.clone()))
             .and_then(edit_short);
 
-        let delete = warp::path!("delete")
+        let delete_path = warp::path!("api" / "delete")
             .and(warp::delete())
             .and(accept)
             .and(content_type)
@@ -45,11 +51,12 @@ pub mod api {
             .and(with_client(client.clone()))
             .and_then(delete_short);
 
-        let routes = login
-            .or(list_all)
-            .or(add)
-            .or(edit)
-            .or(delete);
+        let routes = login_path
+            .or(list_all_path)
+            .or(add_path)
+            .or(edit_path)
+            .or(delete_path)
+            .or(base_path);
 
         warp::serve(routes)
             .run(([127, 0, 0, 1], 4500))

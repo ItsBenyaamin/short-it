@@ -6,6 +6,10 @@ pub trait DatabaseInterface {
 
     fn is_hash_exist(&self, hash: &str) -> bool;
 
+    fn get_short(&self, hash: &str) -> Option<Short>;
+
+    fn new_analytics(&self, hash: &str, ip: &str, referrer: &str);
+
     fn add(&mut self, short: Short) -> ApiOperationStatus;
 
     fn edit(&mut self, hash: String, url: String, until: f64) -> ApiOperationStatus;

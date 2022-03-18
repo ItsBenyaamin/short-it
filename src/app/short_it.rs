@@ -27,6 +27,16 @@ pub mod short_app {
             Arc::new(Mutex::new(self.clone()))
         }
 
+        pub fn get_url(&self, hash: String, ip: String, referrer: String) -> Option<String> {
+            if self.db_client.is_hash_exist(&hash){
+                if let Some(short) = self.db_client.get_short(&hash) {
+                    self.db_client.new_analytics(&hash, &ip, &referrer);
+                    return Some(short.url);
+                }
+            }
+            None
+        }
+
         pub fn login(&mut self) -> String {
             let token = nanoid!(32);
             self.config.renew_token(&token);
@@ -53,7 +63,7 @@ pub mod short_app {
                 hash,
                 url: url.clone(),
                 until,
-                view: 0
+                views: 0
             };
             let result = self.db_client.add(short);
 

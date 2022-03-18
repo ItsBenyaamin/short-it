@@ -1,4 +1,5 @@
 pub mod mysql_impl {
+    use std::time::{SystemTime, UNIX_EPOCH};
     use crate::data::{DatabaseInterface, Short};
     use mysql::*;
     use mysql::prelude::*;
@@ -35,20 +36,25 @@ pub mod mysql_impl {
             if connection.is_err() {
                 return None;
             }
-            let result = connection.unwrap().query_map("select * from shorts", |(hash, url, until, view)| {
-                Short {
-                    hash,
-                    url,
-                    until,
-                    view
-                }
-            });
+            let result = connection.unwrap().
+                query_map("select shorts.hash, shorts.url, shorts.until, count(analytics.hash) as views from shorts left join analytics on analytics.hash = shorts.hash group by shorts.hash",
+                          |(hash, url, until, views)| {
+                              Short {
+                                  hash,
+                                  url,
+                                  until,
+                                  views
+                              }
+                          });
 
             match result {
                 Ok(data) => {
                     Some(data)
                 }
-                Err(_) => { None }
+                Err(e) => {
+                    println!("Error: {:?}", e);
+                    None
+                }
             }
         }
 
@@ -63,6 +69,55 @@ pub mod mysql_impl {
                 .unwrap();
 
             result.unwrap()
+        }
+
+        fn get_short(&self, hash: &str) -> Option<Short> {
+            let connection = self.connection.get_conn();
+            if connection.is_err() {
+                return None;
+            }
+            let mut connection = connection.unwrap();
+
+            let row: Result<Option<Row>> = connection.exec_first("select * from shorts where hash=:hash", params! {
+                "hash" => hash
+            });
+
+            if row.is_err() { return None; }
+            let row = row.unwrap();
+
+            if row.is_none() { return None; }
+            let mut row = row.unwrap();
+
+            if row.is_empty() { return None; }
+
+            let r_hash: String = row.take("hash").unwrap();
+            let r_url: String = row.take("url").unwrap();
+            let r_until: f64 = row.take("until").unwrap();
+
+            Some(Short {
+                hash: r_hash,
+                url: r_url,
+                until: r_until,
+                views: 0
+            })
+        }
+
+        fn new_analytics(&self, hash: &str, ip: &str, referrer: &str) {
+            let connection = self.connection.get_conn();
+            if connection.is_err() {
+                return;
+            }
+            let mut connection = connection.unwrap();
+
+            let _ = connection.exec_drop(
+                "insert into analytics (hash, ip, referrer, time) values (:hash, :ip, :referrer, time)",
+                params! {
+                    "hash" => hash,
+                    "ip" => ip,
+                    "referrer" => referrer,
+                    "time" => SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis().to_string()
+                }
+            );
         }
 
         fn add(&mut self, short: Short) -> ApiOperationStatus {
@@ -121,6 +176,7 @@ pub mod mysql_impl {
 
             ApiOperationStatus::DeleteError
         }
+
     }
 
 }

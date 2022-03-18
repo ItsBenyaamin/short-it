@@ -1,11 +1,35 @@
+use std::net::SocketAddr;
 use bcrypt::verify;
 use warp::hyper::{Body, StatusCode};
-use warp::http::Response;
+use warp::http::{HeaderMap, Response, Uri};
 use warp::Reply;
 use crate::api::*;
 use crate::ShortItClient;
 
-pub async fn login_base(body: LoginRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
+pub async fn base(hash: String, short_client: ShortItClient, addr: Option<SocketAddr>, headers: HeaderMap) -> Result<Response<Body>, warp::Rejection> {
+    let client = short_client.lock().await;
+    let client_ip =  if addr.is_some() {
+        addr.unwrap().ip().to_string()
+    }else {
+        "".to_owned()
+    };
+
+    let referrer = match headers.get("referrer") {
+        None => { String::from("") }
+        Some(header_value) => { header_value.to_str().unwrap().to_owned() }
+    };
+
+    return match client.get_url(hash, client_ip, referrer) {
+        Some(result) => {
+            Ok(warp::redirect(Uri::try_from(result).unwrap()).into_response())
+        }
+        None => {
+            Ok(warp::reply::with_status(String::from("not found!"), StatusCode::NOT_FOUND).into_response())
+        }
+    }
+}
+
+pub async fn login(body: LoginRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
     let mut client = short_client.lock().await;
     if body.username == client.config.username {
         if let Ok(verify_result) = verify(body.password, client.config.password.as_str()) {

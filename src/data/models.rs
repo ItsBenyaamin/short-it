@@ -5,5 +5,5 @@ pub struct Short {
     pub hash: String,
     pub url: String,
     pub until: f64,
-    pub view: isize
+    pub views: usize
 }
