@@ -95,7 +95,7 @@ pub mod mysql_impl {
 
             let r_hash: String = row.take("hash").unwrap();
             let r_url: String = row.take("url").unwrap();
-            let r_until: f64 = row.take("until").unwrap();
+            let r_until: String = row.take("until").unwrap();
 
             Some(Short {
                 hash: r_hash,
@@ -147,7 +147,7 @@ pub mod mysql_impl {
             }
         }
 
-        fn edit(&mut self, hash: String, url: String, until: f64) -> ApiOperationStatus {
+        fn edit(&mut self, hash: String, url: String, until: String) -> ApiOperationStatus {
             let connection = self.connection.get_conn();
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;

@@ -12,7 +12,7 @@ pub trait DatabaseInterface {
 
     fn add(&mut self, short: Short) -> ApiOperationStatus;
 
-    fn edit(&mut self, hash: String, url: String, until: f64) -> ApiOperationStatus;
+    fn edit(&mut self, hash: String, url: String, until: String) -> ApiOperationStatus;
 
     fn delete(&mut self, hash: String) -> ApiOperationStatus;
 }

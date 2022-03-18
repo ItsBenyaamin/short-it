@@ -1,5 +1,3 @@
-extern crate core;
-
 mod data;
 mod app;
 mod app_config;

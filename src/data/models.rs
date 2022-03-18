@@ -4,6 +4,6 @@ use serde::{Serialize, Deserialize};
 pub struct Short {
     pub hash: String,
     pub url: String,
-    pub until: f64,
+    pub until: String,
     pub views: usize
 }

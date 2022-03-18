@@ -1,5 +1,6 @@
 pub mod short_app {
     use std::sync::Arc;
+    use std::time::{SystemTime, UNIX_EPOCH};
     use tokio::sync::Mutex;
     use nanoid::nanoid;
     use crate::api::*;
@@ -30,6 +31,15 @@ pub mod short_app {
         pub fn get_url(&self, hash: String, ip: String, referrer: String) -> Option<String> {
             if self.db_client.is_hash_exist(&hash){
                 if let Some(short) = self.db_client.get_short(&hash) {
+                    if !short.until.eq("0") {
+                        let short_until = short.until.parse::<u128>().unwrap();
+                        let now_as_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+                        if short_until > now_as_millis {
+                            // add a until reaction decision in app setting
+                            // for now just not redirect to the url and return 404.
+                            return None;
+                        }
+                    }
                     self.db_client.new_analytics(&hash, &ip, &referrer);
                     return Some(short.url);
                 }
@@ -57,12 +67,12 @@ pub mod short_app {
             }
         }
 
-        pub fn short_with(&mut self, url: String, until: f64) -> String {
+        pub fn short_with(&mut self, url: String, until: String) -> String {
             let hash = nanoid!(6);
             let short = Short {
                 hash,
                 url: url.clone(),
-                until,
+                until: until.clone(),
                 views: 0
             };
             let result = self.db_client.add(short);
@@ -88,7 +98,7 @@ pub mod short_app {
             serde_json::to_string(&response).unwrap()
         }
 
-        pub fn edit_short(&mut self, hash: String, url: String, until: f64) -> String {
+        pub fn edit_short(&mut self, hash: String, url: String, until: String) -> String {
             let result = self.db_client.edit(hash, url, until);
             let response = match result {
                 ApiOperationStatus::Edited => {
