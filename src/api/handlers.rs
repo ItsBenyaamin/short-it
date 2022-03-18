@@ -14,12 +14,12 @@ pub async fn base(hash: String, short_client: ShortItClient, addr: Option<Socket
         "".to_owned()
     };
 
-    let referrer = match headers.get("referrer") {
+    let referer = match headers.get("Referer") {
         None => { String::from("") }
         Some(header_value) => { header_value.to_str().unwrap().to_owned() }
     };
 
-    return match client.get_url(hash, client_ip, referrer) {
+    return match client.get_url(hash, client_ip, referer) {
         Some(result) => {
             Ok(warp::redirect(Uri::try_from(result).unwrap()).into_response())
         }

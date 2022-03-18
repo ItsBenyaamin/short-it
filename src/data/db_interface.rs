@@ -8,7 +8,7 @@ pub trait DatabaseInterface {
 
     fn get_short(&self, hash: &str) -> Option<Short>;
 
-    fn new_analytics(&self, hash: &str, ip: &str, referrer: &str);
+    fn new_analytics(&self, hash: &str, ip: &str, referer: &str);
 
     fn add(&mut self, short: Short) -> ApiOperationStatus;
 

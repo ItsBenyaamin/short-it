@@ -105,7 +105,7 @@ pub mod mysql_impl {
             })
         }
 
-        fn new_analytics(&self, hash: &str, ip: &str, referrer: &str) {
+        fn new_analytics(&self, hash: &str, ip: &str, referer: &str) {
             let connection = self.connection.get_conn();
             if connection.is_err() {
                 return;
@@ -113,11 +113,11 @@ pub mod mysql_impl {
             let mut connection = connection.unwrap();
 
             let _ = connection.exec_drop(
-                "insert into analytics (hash, ip, referrer, time) values (:hash, :ip, :referrer, time)",
+                "insert into analytics (hash, ip, referer, time) values (:hash, :ip, :referer, time)",
                 params! {
                     "hash" => hash,
                     "ip" => ip,
-                    "referrer" => referrer,
+                    "referer" => referer,
                     "time" => SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis().to_string()
                 }
             );

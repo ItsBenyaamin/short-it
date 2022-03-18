@@ -28,7 +28,7 @@ pub mod short_app {
             Arc::new(Mutex::new(self.clone()))
         }
 
-        pub fn get_url(&self, hash: String, ip: String, referrer: String) -> Option<String> {
+        pub fn get_url(&self, hash: String, ip: String, referer: String) -> Option<String> {
             if self.db_client.is_hash_exist(&hash){
                 if let Some(short) = self.db_client.get_short(&hash) {
                     if !short.until.eq("0") {
@@ -40,7 +40,7 @@ pub mod short_app {
                             return None;
                         }
                     }
-                    self.db_client.new_analytics(&hash, &ip, &referrer);
+                    self.db_client.new_analytics(&hash, &ip, &referer);
                     return Some(short.url);
                 }
             }
