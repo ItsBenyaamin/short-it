@@ -36,8 +36,10 @@ pub mod mysql_impl {
             if connection.is_err() {
                 return None;
             }
-            let result = connection.unwrap().
-                query_map("select shorts.hash, shorts.url, shorts.until, count(analytics.hash) as views from shorts left join analytics on analytics.hash = shorts.hash group by shorts.hash",
+            let mut connection = connection.unwrap();
+
+            let result = connection
+                .query_map("select shorts.hash, shorts.url, shorts.until, count(analytics.hash) as views from shorts left join analytics on analytics.hash = shorts.hash group by shorts.hash",
                           |(hash, url, until, views)| {
                               Short {
                                   hash,
@@ -63,8 +65,9 @@ pub mod mysql_impl {
             if connection.is_err() {
                 return false;
             }
+            let mut connection = connection.unwrap();
 
-            let result: Option<bool> = connection.unwrap()
+            let result: Option<bool> = connection
                 .query_first(format!("select exists(select hash from shorts where hash='{}')", hash))
                 .unwrap();
 
@@ -125,12 +128,13 @@ pub mod mysql_impl {
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;
             }
+            let mut connection = connection.unwrap();
 
             if self.is_hash_exist(&short.hash) {
                 return ApiOperationStatus::DuplicatedHashError;
             }
 
-            return match connection.unwrap().exec_drop(
+            return match connection.exec_drop(
                 "insert into shorts (hash, url, until) values (:hash, :url, :until)",
                 params! {
                     "hash" => &short.hash,
@@ -148,8 +152,8 @@ pub mod mysql_impl {
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;
             }
-
-            if self.is_hash_exist(&hash) && connection.unwrap()
+            let mut connection = connection.unwrap();
+            if self.is_hash_exist(&hash) && connection
                 .exec_drop("update shorts set url=:url, until=:until where hash=:hash",
                            params! {
                                 "url" => url.trim(),
@@ -167,8 +171,9 @@ pub mod mysql_impl {
             if connection.is_err() {
                 return ApiOperationStatus::ConnectionError;
             }
+            let mut connection = connection.unwrap();
 
-            if self.is_hash_exist(&hash) && connection.unwrap()
+            if self.is_hash_exist(&hash) && connection
                 .exec_drop("delete from shorts where hash =:hash",
                            params! {"hash" => hash}).is_ok() {
                 return ApiOperationStatus::Deleted;
