@@ -1,5 +1,4 @@
 pub mod mysql_impl {
-    use std::time::{SystemTime, UNIX_EPOCH};
     use crate::data::{DatabaseInterface, Short};
     use mysql::*;
     use mysql::prelude::*;
@@ -105,7 +104,7 @@ pub mod mysql_impl {
             })
         }
 
-        fn new_analytics(&self, hash: &str, ip: &str, referer: &str) {
+        fn new_analytics(&self, hash: &str, ip: &str, referer: &str, time: &str) {
             let connection = self.connection.get_conn();
             if connection.is_err() {
                 return;
@@ -113,12 +112,12 @@ pub mod mysql_impl {
             let mut connection = connection.unwrap();
 
             let _ = connection.exec_drop(
-                "insert into analytics (hash, ip, referer, time) values (:hash, :ip, :referer, time)",
+                "insert into analytics (hash, ip, referer, time) values (:hash, :ip, :referer, :time)",
                 params! {
                     "hash" => hash,
                     "ip" => ip,
                     "referer" => referer,
-                    "time" => SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis().to_string()
+                    "time" => time
                 }
             );
         }

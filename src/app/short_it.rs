@@ -31,16 +31,16 @@ pub mod short_app {
         pub fn get_url(&self, hash: String, ip: String, referer: String) -> Option<String> {
             if self.db_client.is_hash_exist(&hash){
                 if let Some(short) = self.db_client.get_short(&hash) {
+                    let now_as_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
                     if !short.until.eq("0") {
                         let short_until = short.until.parse::<u128>().unwrap();
-                        let now_as_millis = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
                         if short_until > now_as_millis {
                             // add a until reaction decision in app setting
                             // for now just not redirect to the url and return 404.
                             return None;
                         }
                     }
-                    self.db_client.new_analytics(&hash, &ip, &referer);
+                    self.db_client.new_analytics(&hash, &ip, &referer, &now_as_millis.to_string());
                     return Some(short.url);
                 }
             }
