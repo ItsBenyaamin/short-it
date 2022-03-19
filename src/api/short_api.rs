@@ -24,6 +24,7 @@ pub mod api {
         let list_all_path = warp::path!("api" / "all")
             .and(warp::get())
             .and(content_type)
+            .and(warp::header::optional("api-key"))
             .and(with_client(client.clone()))
             .and_then(get_all);
 
@@ -32,6 +33,7 @@ pub mod api {
             .and(accept)
             .and(content_type)
             .and(warp::body::json())
+            .and(warp::header::optional("api-key"))
             .and(with_client(client.clone()))
             .and_then(add_short);
 
@@ -40,6 +42,7 @@ pub mod api {
             .and(accept)
             .and(content_type)
             .and(warp::body::json())
+            .and(warp::header::optional("api-key"))
             .and(with_client(client.clone()))
             .and_then(edit_short);
 
@@ -48,6 +51,7 @@ pub mod api {
             .and(accept)
             .and(content_type)
             .and(warp::body::json())
+            .and(warp::header::optional("api-key"))
             .and(with_client(client.clone()))
             .and_then(delete_short);
 

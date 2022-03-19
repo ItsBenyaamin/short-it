@@ -9,8 +9,7 @@ pub struct LoginRequest {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AddRequest {
     pub url: String,
-    pub until: String,
-    pub token: String
+    pub until: String
 }
 
 
@@ -19,11 +18,9 @@ pub struct EditRequest {
     pub hash: String,
     pub url: String,
     pub until: String,
-    pub token: String
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct RemoveRequest {
-    pub hash: String,
-    pub token: String
+    pub hash: String
 }
