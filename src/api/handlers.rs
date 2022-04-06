@@ -1,10 +1,10 @@
 use std::net::SocketAddr;
-use bcrypt::verify;
 use warp::hyper::{Body, StatusCode};
 use warp::http::{HeaderMap, Response, Uri};
 use warp::Reply;
 use crate::api::*;
 use crate::ShortItClient;
+use crate::encryption_util::verify_pass;
 
 pub async fn base(hash: String, short_client: ShortItClient, addr: Option<SocketAddr>, headers: HeaderMap) -> Result<Response<Body>, warp::Rejection> {
     let client = short_client.lock().await;
@@ -32,11 +32,9 @@ pub async fn base(hash: String, short_client: ShortItClient, addr: Option<Socket
 pub async fn login(body: LoginRequest, short_client: ShortItClient) -> Result<Response<Body>, warp::Rejection> {
     let mut client = short_client.lock().await;
     if body.username == client.config.username {
-        if let Ok(verify_result) = verify(body.password, client.config.password.as_str()) {
-            if verify_result {
-                let result = client.login();
-                return Ok(warp::reply::Response::new(result.into()))
-            }
+        if verify_pass(&body.password, &client.config.password) {
+            let result = client.login();
+            return Ok(warp::reply::Response::new(result.into()))
         }
     }
     Ok(warp::reply::with_status("wrong credential!", StatusCode::UNAUTHORIZED).into_response())

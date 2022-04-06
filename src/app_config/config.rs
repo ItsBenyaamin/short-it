@@ -4,7 +4,7 @@ pub mod app_config {
     use std::io::{Read, Write};
     use serde::{Serialize, Deserialize};
     use serde_json;
-    use bcrypt::{hash, DEFAULT_COST};
+    use crate::encryption_util::encrypt;
 
 
     #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -17,7 +17,6 @@ pub mod app_config {
         pub username: String,
         pub password: String,
         pub token: String,
-        pub caching: bool,
     }
 
 
@@ -55,6 +54,11 @@ pub mod app_config {
             write_config(&file, self)
         }
 
+        pub fn update(&mut self) {
+            let file = PathBuf::from(&self.config_path);
+            write_config(&file, &self)
+        }
+
         pub fn default_config() -> Self {
             AppConfig {
                 config_path: String::from(""),
@@ -63,9 +67,8 @@ pub mod app_config {
                 db_username: String::from(""),
                 db_password: String::from(""),
                 username: String::from("admin"),
-                password: hash("admin", DEFAULT_COST).unwrap(),
-                token: String::from(""),
-                caching: false
+                password: encrypt("admin"),
+                token: String::from("")
             }
         }
 

@@ -11,7 +11,7 @@ pub mod mysql_impl {
 
     impl MysqlDB {
         pub fn new(username: &str, password: &str, database: &str) -> Self {
-            let url = format!("mysql://{}:{}@192.168.1.100:3306/{}", username, password, database);
+            let url = format!("mysql://{}:{}@192.168.1.106:3306/{}", username, password, database);
             let opts = mysql::Opts::from_url(url.as_str()).unwrap();
             let pool = match Pool::new(opts) {
                 Ok(p) => {

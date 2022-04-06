@@ -63,8 +63,7 @@ pub mod api {
             .or(base_path);
 
         warp::serve(routes)
-            .run(([127, 0, 0, 1], 4500))
-            .await;
+            .run(([127, 0, 0, 1], 4500)).await;
     }
 
     fn with_client(client: ShortItClient) -> impl Filter<Extract = (ShortItClient,), Error = std::convert::Infallible> + Clone {
