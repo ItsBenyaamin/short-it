@@ -10,8 +10,6 @@ pub mod app_config {
     #[derive(Debug, Serialize, Deserialize, Clone)]
     pub struct AppConfig {
         pub config_path: String,
-        pub ip: String,
-        pub do_limit: bool,
         pub db_name: String,
         pub db_username: String,
         pub db_password: String,
@@ -63,8 +61,6 @@ pub mod app_config {
         pub fn default_config() -> Self {
             AppConfig {
                 config_path: String::from(""),
-                ip : String::from(""),
-                do_limit: false,
                 db_name: String::from(""),
                 db_username: String::from(""),
                 db_password: String::from(""),

@@ -32,8 +32,6 @@ async fn main() {
     let mut config = AppConfig::create();
 
     let matches = Command::new("short-it")
-        .arg(arg!(--do_limit <Do_Limit>).possible_value("y").possible_value("n").required(false))
-        .arg(arg!(--ip <IP>).required(false))
         .arg(arg!(--db_name <Database_Name>).required(false))
         .arg(arg!(--db_user <Database_Username>).required(false))
         .arg(arg!(--db_pass <Database_Password>).required(false))
@@ -41,26 +39,6 @@ async fn main() {
         .arg(arg!(--pass <Panel_Password>).required(false))
         .version("1.0")
         .get_matches();
-
-    if let Some(do_limit) = matches.value_of("do_limit") {
-        let result = if do_limit == "y" { true } else { false };
-        println!("Limit state updated: {}", result);
-        config.do_limit = result;
-    }
-
-    let ip_arg = matches.value_of("ip");
-    if let Some(ip) = ip_arg {
-        if IPAddress::is_valid(ip) {
-            config.ip = ip.to_owned();
-            println!("IP updated: {}", ip);
-        }else {
-            let _ = io::stderr()
-                .lock()
-                .write_all(
-                    format!("IP Address: {} is not valid!\n", ip).as_bytes()
-                );
-        }
-    }
 
     if let Some(db_name) = matches.value_of("db_name") {
         println!("Database name updated: {}", db_name);
