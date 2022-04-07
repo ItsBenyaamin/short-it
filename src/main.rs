@@ -49,8 +49,7 @@ async fn main() {
 
     if let Some(db_pass) = matches.value_of("db_pass") {
         println!("Database password updated");
-        let encrypted_password = encryption_util::encrypt(db_pass);
-        config.db_password = encrypted_password;
+        config.db_password = db_pass.to_owned();
     }
 
     if let Some(user) = matches.value_of("user") {
@@ -67,7 +66,6 @@ async fn main() {
     config.update();
 
     if !matches.args_present() {
-        println!("empty!");
         start(config).await;
     }
 }
