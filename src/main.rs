@@ -10,10 +10,7 @@ use crate::api::short_api::api::setup_endpoints;
 use crate::app::short_it::short_app::ShortItClient;
 use crate::app::ShortIt;
 use crate::utils::encryption_util;
-use std::io;
-use std::io::Write;
 use clap::{arg, Command};
-use ipaddress::IPAddress;
 
 
 const HEADER: &str = r" ________  ___  ___  ________  ________  _________        ___  _________
