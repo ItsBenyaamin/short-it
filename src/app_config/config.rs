@@ -75,12 +75,14 @@ pub mod app_config {
     }
 
     fn write_config(path_buf: &Path, config: &AppConfig) {
-        let options = OpenOptions::new().create(true).write(true).open(&path_buf);
+        let options = OpenOptions::new().create(true).write(true).truncate(true).open(&path_buf);
         if let Ok(mut file) = options {
+            file.write_all(b"");
             let config_string = serde_json::to_string(&config).unwrap();
             if file.write_all(config_string.as_bytes()).is_err() {
                 println!("problem due to write app_config file!");
             }
+            file.flush();
         }
     }
 
