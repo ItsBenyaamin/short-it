@@ -11,6 +11,7 @@ pub mod app_config {
     pub struct AppConfig {
         pub config_path: String,
         pub ip: String,
+        pub do_limit: bool,
         pub db_name: String,
         pub db_username: String,
         pub db_password: String,
@@ -63,6 +64,7 @@ pub mod app_config {
             AppConfig {
                 config_path: String::from(""),
                 ip : String::from(""),
+                do_limit: false,
                 db_name: String::from(""),
                 db_username: String::from(""),
                 db_password: String::from(""),
@@ -77,12 +79,10 @@ pub mod app_config {
     fn write_config(path_buf: &Path, config: &AppConfig) {
         let options = OpenOptions::new().create(true).write(true).truncate(true).open(&path_buf);
         if let Ok(mut file) = options {
-            file.write_all(b"");
             let config_string = serde_json::to_string(&config).unwrap();
             if file.write_all(config_string.as_bytes()).is_err() {
                 println!("problem due to write app_config file!");
             }
-            file.flush();
         }
     }
 
