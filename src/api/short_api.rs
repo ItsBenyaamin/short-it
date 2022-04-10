@@ -7,7 +7,7 @@ pub mod api {
         let accept = warp::header::exact("Accept", "application/json");
         let content_type = warp::header::exact("Content-Type", "application/json");
 
-        let base_path = warp::path!("r" / String)
+        let base_path = warp::path!(String)
             .and(with_client(client.clone()))
             .and(warp::addr::remote())
             .and(warp::header::headers_cloned())
